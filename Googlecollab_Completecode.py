@@ -1,534 +1,99 @@
-{
-  "cells": [
-    {
-      "cell_type": "markdown",
-      "metadata": {
-        "id": "view-in-github",
-        "colab_type": "text"
-      },
-      "source": [
-        "<a href=\"https://colab.research.google.com/github/santhoshsandy6398-oss/MedicalCost_RandomForestRegressormodel/blob/main/Googlecollab_Completecode.py\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
-      ]
-    },
-    {
-      "cell_type": "code",
-      "source": [
-        "#Import Libraries\n",
-        "\n",
-        "import numpy as np\n",
-        "import pandas as pd\n",
-        "\n",
-        "#Preprocessing\n",
-        "from sklearn.model_selection import train_test_split, cross_val_score\n",
-        "from sklearn.preprocessing import StandardScaler, LabelEncoder\n",
-        "\n",
-        "#Models\n",
-        "from sklearn.linear_model import LinearRegression, LogisticRegression\n",
-        "from sklearn.tree import DecisionTreeRegressor\n",
-        "from sklearn.ensemble import RandomForestRegressor\n",
-        "from sklearn.neighbors import KNeighborsRegressor\n",
-        "from sklearn.svm import SVR, SVC\n",
-        "\n",
-        "#Evaluation\n",
-        "from sklearn.metrics import (accuracy_score, classification_report, confusion_matrix,\n",
-        "                             mean_squared_error, r2_score)\n",
-        "\n",
-        "#Load data\n",
-        "df=pd.read_csv('insurance.csv')\n",
-        "df.head()\n",
-        "df['sex']=df['sex'].map({'male':1,'female':0})\n",
-        "df['smoker']=df['smoker'].map({'yes':1,'no':0})\n",
-        "df['region']=df['region'].map({'southeast':0,'southwest':1,'northeast':2,'northwest':3})\n",
-        "df.head()\n",
-        "df.corr()['charges']\n",
-        "\n",
-        "df.drop(columns = ['sex', 'children', 'region'], inplace=True)\n",
-        "df.head()\n",
-        "\n",
-        "#Split features and Target\n",
-        "\n",
-        "X_train, x_test, y_train, y_test = train_test_split(df.drop('charges', axis=1), df['charges'], test_size=0.2, random_state=42)\n",
-        "scaler = StandardScaler()\n",
-        "X_train = scaler.fit_transform(X_train)\n",
-        "x_test = scaler.transform(x_test)\n",
-        "\n",
-        "#model selection and training\n",
-        "\n",
-        "models = {'Linear Regression' : LinearRegression()\n",
-        "          , 'Decision Tree Regressor' : DecisionTreeRegressor(max_depth=5,\n",
-        "                                                              random_state = 42)\n",
-        "          , 'Random Forest Regressor' : RandomForestRegressor(n_estimators=100,\n",
-        "                                                              max_depth=5,\n",
-        "                                                              random_state = 42)\n",
-        "          , 'KNN Regressor' : KNeighborsRegressor()\n",
-        "          , 'SVM' : SVR(kernel='linear') # Changed SVC to SVR for regression\n",
-        "}\n",
-        "\n",
-        "results = {}\n",
-        "\n",
-        "#train all the models\n",
-        "\n",
-        "for name, model in models.items():\n",
-        "    model.fit(X_train, y_train)\n",
-        "\n",
-        "    # Predictions on test data\n",
-        "    y_pred_test = model.predict(x_test)\n",
-        "    r2_test = r2_score(y_test, y_pred_test)\n",
-        "    rmse_test = np.sqrt(mean_squared_error(y_test, y_pred_test))\n",
-        "\n",
-        "    # Predictions on training data\n",
-        "    y_pred_train = model.predict(X_train)\n",
-        "    r2_train = r2_score(y_train, y_pred_train)\n",
-        "    rmse_train = np.sqrt(mean_squared_error(y_train, y_pred_train))\n",
-        "\n",
-        "    results[name] = {\n",
-        "        'R2 Score (Test)': r2_test,\n",
-        "        'RMSE (Test)': rmse_test,\n",
-        "        'R2 Score (Train)': r2_train,\n",
-        "        'RMSE (Train)': rmse_train\n",
-        "    }\n",
-        "\n",
-        "print(\"Model Evaluation Results:\")\n",
-        "for name, metrics in results.items():\n",
-        "    print(f\"{name}:\")\n",
-        "    for metric_name, value in metrics.items():\n",
-        "        print(f\"  {metric_name}: {value:.4f}\")"
-      ],
-      "metadata": {
-        "colab": {
-          "base_uri": "https://localhost:8080/"
-        },
-        "collapsed": true,
-        "id": "ssI3rEgeb_Hx",
-        "outputId": "a54c53f3-a755-4a6d-c3f1-0501d1462ce5"
-      },
-      "execution_count": 20,
-      "outputs": [
-        {
-          "output_type": "stream",
-          "name": "stdout",
-          "text": [
-            "Model Evaluation Results:\n",
-            "Linear Regression:\n",
-            "  R2 Score (Test): 0.7777\n",
-            "  RMSE (Test): 5874.7633\n",
-            "  R2 Score (Train): 0.7392\n",
-            "  RMSE (Train): 6134.9873\n",
-            "Decision Tree Regressor:\n",
-            "  R2 Score (Test): 0.8279\n",
-            "  RMSE (Test): 5169.1836\n",
-            "  R2 Score (Train): 0.8726\n",
-            "  RMSE (Train): 4288.5813\n",
-            "Random Forest Regressor:\n",
-            "  R2 Score (Test): 0.8655\n",
-            "  RMSE (Test): 4570.2911\n",
-            "  R2 Score (Train): 0.8809\n",
-            "  RMSE (Train): 4145.9435\n",
-            "KNN Regressor:\n",
-            "  R2 Score (Test): 0.8514\n",
-            "  RMSE (Test): 4803.6839\n",
-            "  R2 Score (Train): 0.8741\n",
-            "  RMSE (Train): 4263.4641\n",
-            "SVM:\n",
-            "  R2 Score (Test): 0.0186\n",
-            "  RMSE (Test): 12343.3098\n",
-            "  R2 Score (Train): -0.0114\n",
-            "  RMSE (Train): 12082.0770\n"
-          ]
-        }
-      ]
-    },
-    {
-      "cell_type": "markdown",
-      "metadata": {
-        "id": "b41fc2b3"
-      },
-      "source": [
-        "### Complete Code for RandomForestRegressor"
-      ]
-    },
-    {
-      "cell_type": "code",
-      "metadata": {
-        "colab": {
-          "base_uri": "https://localhost:8080/"
-        },
-        "id": "a5a19f96",
-        "outputId": "6e1c7d7f-d465-43ee-e8d0-e456e0e4d51f"
-      },
-      "source": [
-        "#Import Libraries\n",
-        "\n",
-        "import numpy as np\n",
-        "import pandas as pd\n",
-        "\n",
-        "#Preprocessing\n",
-        "from sklearn.model_selection import train_test_split\n",
-        "from sklearn.preprocessing import StandardScaler\n",
-        "\n",
-        "#Models\n",
-        "from sklearn.ensemble import RandomForestRegressor\n",
-        "\n",
-        "#Evaluation\n",
-        "from sklearn.metrics import (mean_squared_error, r2_score)\n",
-        "\n",
-        "#Load data\n",
-        "df_rf = pd.read_csv('insurance.csv')\n",
-        "\n",
-        "# Feature Engineering (map function)\n",
-        "df_rf['sex']=df_rf['sex'].map({'male':1,'female':0})\n",
-        "df_rf['smoker']=df_rf['smoker'].map({'yes':1,'no':0})\n",
-        "df_rf['region']=df_rf['region'].map({'southeast':0,'southwest':1,'northeast':2,'northwest':3})\n",
-        "\n",
-        "# Drop unnecessary columns (assuming these are not needed for RandomForest as per previous steps)\n",
-        "df_rf.drop(columns = ['sex', 'children', 'region'], inplace=True, errors='ignore')\n",
-        "\n",
-        "#Split features and Target\n",
-        "X = df_rf.drop('charges', axis=1)\n",
-        "y = df_rf['charges']\n",
-        "X_train_rf, x_test_rf, y_train_rf, y_test_rf = train_test_split(X, y, test_size=0.2, random_state=42)\n",
-        "\n",
-        "# Scale features\n",
-        "scaler_rf = StandardScaler()\n",
-        "X_train_rf = scaler_rf.fit_transform(X_train_rf)\n",
-        "x_test_rf = scaler_rf.transform(x_test_rf)\n",
-        "\n",
-        "# Initialize and train RandomForestRegressor\n",
-        "rf_model = RandomForestRegressor(n_estimators=100, max_depth=5, random_state=42)\n",
-        "rf_model.fit(X_train_rf, y_train_rf)\n",
-        "\n",
-        "# Make predictions\n",
-        "y_pred_test_rf = rf_model.predict(x_test_rf)\n",
-        "y_pred_train_rf = rf_model.predict(X_train_rf)\n",
-        "\n",
-        "# Evaluate the model\n",
-        "r2_rf_train = r2_score(y_train_rf, y_pred_train_rf)\n",
-        "rmse_rf_train = np.sqrt(mean_squared_error(y_train_rf, y_pred_train_rf))\n",
-        "r2_rf_test = r2_score(y_test_rf, y_pred_test_rf)\n",
-        "rmse_rf_test = np.sqrt(mean_squared_error(y_test_rf, y_pred_test_rf))\n",
-        "\n",
-        "print(\"Random Forest Regressor Evaluation Results:\")\n",
-        "print(f\"  R2 Score test: {r2_rf_test:.4f}\")\n",
-        "print(f\"  RMSE test: {rmse_rf_test:.4f}\")\n",
-        "print(f\"  R2 Score Train: {r2_rf_train:.4f}\")\n",
-        "print(f\"  RMSE Train: {rmse_rf_train:.4f}\")"
-      ],
-      "execution_count": 4,
-      "outputs": [
-        {
-          "output_type": "stream",
-          "name": "stdout",
-          "text": [
-            "Random Forest Regressor Evaluation Results:\n",
-            "  R2 Score test: 0.8655\n",
-            "  RMSE test: 4570.2911\n",
-            "  R2 Score Train: 0.8809\n",
-            "  RMSE Train: 4145.9435\n"
-          ]
-        }
-      ]
-    },
-    {
-      "cell_type": "markdown",
-      "metadata": {
-        "id": "9e89f929"
-      },
-      "source": [
-        "### Testing the Random Forest Regressor with new data"
-      ]
-    },
-    {
-      "cell_type": "code",
-      "metadata": {
-        "colab": {
-          "base_uri": "https://localhost:8080/",
-          "height": 161
-        },
-        "id": "5005b561",
-        "outputId": "3dd571c6-ab47-4d01-95f1-dc3a8f0d7fb2"
-      },
-      "source": [
-        "# Let's create a sample new data point for prediction.\n",
-        "# The input features are 'age', 'bmi', 'smoker'.\n",
-        "# smoker: 1 for 'yes', 0 for 'no'\n",
-        "\n",
-        "# Example: A 30-year-old with BMI 25, who is a non-smoker.\n",
-        "new_data = pd.DataFrame({\n",
-        "    'age': [30],\n",
-        "    'bmi': [25.0],\n",
-        "    'smoker': [0] # 0 for non-smoker\n",
-        "})\n",
-        "\n",
-        "# Display the new data\n",
-        "print(\"New data point for prediction:\")\n",
-        "display(new_data)\n",
-        "\n",
-        "# Scale the new data using the same scaler used for training\n",
-        "# (scaler_rf was defined in cell a5a19f96)\n",
-        "scaled_new_data = scaler_rf.transform(new_data)\n",
-        "\n",
-        "# Make a prediction using the trained RandomForestRegressor (rf_model from cell a5a19f96)\n",
-        "predicted_charge = rf_model.predict(scaled_new_data)\n",
-        "\n",
-        "print(f\"\\nPredicted insurance charge for the new individual: ${predicted_charge[0]:,.2f}\")"
-      ],
-      "execution_count": 5,
-      "outputs": [
-        {
-          "output_type": "stream",
-          "name": "stdout",
-          "text": [
-            "New data point for prediction:\n"
-          ]
-        },
-        {
-          "output_type": "display_data",
-          "data": {
-            "text/plain": [
-              "   age   bmi  smoker\n",
-              "0   30  25.0       0"
-            ],
-            "text/html": [
-              "\n",
-              "  <div id=\"df-8cbf5159-f257-49ac-8bd1-9c9dc58385a8\" class=\"colab-df-container\">\n",
-              "    <div>\n",
-              "<style scoped>\n",
-              "    .dataframe tbody tr th:only-of-type {\n",
-              "        vertical-align: middle;\n",
-              "    }\n",
-              "\n",
-              "    .dataframe tbody tr th {\n",
-              "        vertical-align: top;\n",
-              "    }\n",
-              "\n",
-              "    .dataframe thead th {\n",
-              "        text-align: right;\n",
-              "    }\n",
-              "</style>\n",
-              "<table border=\"1\" class=\"dataframe\">\n",
-              "  <thead>\n",
-              "    <tr style=\"text-align: right;\">\n",
-              "      <th></th>\n",
-              "      <th>age</th>\n",
-              "      <th>bmi</th>\n",
-              "      <th>smoker</th>\n",
-              "    </tr>\n",
-              "  </thead>\n",
-              "  <tbody>\n",
-              "    <tr>\n",
-              "      <th>0</th>\n",
-              "      <td>30</td>\n",
-              "      <td>25.0</td>\n",
-              "      <td>0</td>\n",
-              "    </tr>\n",
-              "  </tbody>\n",
-              "</table>\n",
-              "</div>\n",
-              "    <div class=\"colab-df-buttons\">\n",
-              "\n",
-              "  <div class=\"colab-df-container\">\n",
-              "    <button class=\"colab-df-convert\" onclick=\"convertToInteractive('df-8cbf5159-f257-49ac-8bd1-9c9dc58385a8')\"\n",
-              "            title=\"Convert this dataframe to an interactive table.\"\n",
-              "            style=\"display:none;\">\n",
-              "\n",
-              "  <svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24px\" viewBox=\"0 -960 960 960\">\n",
-              "    <path d=\"M120-120v-720h720v720H120Zm60-500h600v-160H180v160Zm220 220h160v-160H400v160Zm0 220h160v-160H400v160ZM180-400h160v-160H180v160Zm440 0h160v-160H620v160ZM180-180h160v-160H180v160Zm440 0h160v-160H620v160Z\"/>\n",
-              "  </svg>\n",
-              "    </button>\n",
-              "\n",
-              "  <style>\n",
-              "    .colab-df-container {\n",
-              "      display:flex;\n",
-              "      gap: 12px;\n",
-              "    }\n",
-              "\n",
-              "    .colab-df-convert {\n",
-              "      background-color: #E8F0FE;\n",
-              "      border: none;\n",
-              "      border-radius: 50%;\n",
-              "      cursor: pointer;\n",
-              "      display: none;\n",
-              "      fill: #1967D2;\n",
-              "      height: 32px;\n",
-              "      padding: 0 0 0 0;\n",
-              "      width: 32px;\n",
-              "    }\n",
-              "\n",
-              "    .colab-df-convert:hover {\n",
-              "      background-color: #E2EBFA;\n",
-              "      box-shadow: 0px 1px 2px rgba(60, 64, 67, 0.3), 0px 1px 3px 1px rgba(60, 64, 67, 0.15);\n",
-              "      fill: #174EA6;\n",
-              "    }\n",
-              "\n",
-              "    .colab-df-buttons div {\n",
-              "      margin-bottom: 4px;\n",
-              "    }\n",
-              "\n",
-              "    [theme=dark] .colab-df-convert {\n",
-              "      background-color: #3B4455;\n",
-              "      fill: #D2E3FC;\n",
-              "    }\n",
-              "\n",
-              "    [theme=dark] .colab-df-convert:hover {\n",
-              "      background-color: #434B5C;\n",
-              "      box-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.15);\n",
-              "      filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3));\n",
-              "      fill: #FFFFFF;\n",
-              "    }\n",
-              "  </style>\n",
-              "\n",
-              "    <script>\n",
-              "      const buttonEl =\n",
-              "        document.querySelector('#df-8cbf5159-f257-49ac-8bd1-9c9dc58385a8 button.colab-df-convert');\n",
-              "      buttonEl.style.display =\n",
-              "        google.colab.kernel.accessAllowed ? 'block' : 'none';\n",
-              "\n",
-              "      async function convertToInteractive(key) {\n",
-              "        const element = document.querySelector('#df-8cbf5159-f257-49ac-8bd1-9c9dc58385a8');\n",
-              "        const dataTable =\n",
-              "          await google.colab.kernel.invokeFunction('convertToInteractive',\n",
-              "                                                    [key], {});\n",
-              "        if (!dataTable) return;\n",
-              "\n",
-              "        const docLinkHtml = 'Like what you see? Visit the ' +\n",
-              "          '<a target=\"_blank\" href=https://colab.research.google.com/notebooks/data_table.ipynb>data table notebook</a>'\n",
-              "          + ' to learn more about interactive tables.';\n",
-              "        element.innerHTML = '';\n",
-              "        dataTable['output_type'] = 'display_data';\n",
-              "        await google.colab.output.renderOutput(dataTable, element);\n",
-              "        const docLink = document.createElement('div');\n",
-              "        docLink.innerHTML = docLinkHtml;\n",
-              "        element.appendChild(docLink);\n",
-              "      }\n",
-              "    </script>\n",
-              "  </div>\n",
-              "\n",
-              "\n",
-              "  <div id=\"id_280d0aa3-33ac-4eae-adb0-dbf182b81255\">\n",
-              "    <style>\n",
-              "      .colab-df-generate {\n",
-              "        background-color: #E8F0FE;\n",
-              "        border: none;\n",
-              "        border-radius: 50%;\n",
-              "        cursor: pointer;\n",
-              "        display: none;\n",
-              "        fill: #1967D2;\n",
-              "        height: 32px;\n",
-              "        padding: 0 0 0 0;\n",
-              "        width: 32px;\n",
-              "      }\n",
-              "\n",
-              "      .colab-df-generate:hover {\n",
-              "        background-color: #E2EBFA;\n",
-              "        box-shadow: 0px 1px 2px rgba(60, 64, 67, 0.3), 0px 1px 3px 1px rgba(60, 64, 67, 0.15);\n",
-              "        fill: #174EA6;\n",
-              "      }\n",
-              "\n",
-              "      [theme=dark] .colab-df-generate {\n",
-              "        background-color: #3B4455;\n",
-              "        fill: #D2E3FC;\n",
-              "      }\n",
-              "\n",
-              "      [theme=dark] .colab-df-generate:hover {\n",
-              "        background-color: #434B5C;\n",
-              "        box-shadow: 0px 1px 3px 1px rgba(0, 0, 0, 0.15);\n",
-              "        filter: drop-shadow(0px 1px 2px rgba(0, 0, 0, 0.3));\n",
-              "        fill: #FFFFFF;\n",
-              "      }\n",
-              "    </style>\n",
-              "    <button class=\"colab-df-generate\" onclick=\"generateWithVariable('new_data')\"\n",
-              "            title=\"Generate code using this dataframe.\"\n",
-              "            style=\"display:none;\">\n",
-              "\n",
-              "  <svg xmlns=\"http://www.w3.org/2000/svg\" height=\"24px\"viewBox=\"0 0 24 24\"\n",
-              "       width=\"24px\">\n",
-              "    <path d=\"M7,19H8.4L18.45,9,17,7.55,7,17.6ZM5,21V16.75L18.45,3.32a2,2,0,0,1,2.83,0l1.4,1.43a1.91,1.91,0,0,1,.58,1.4,1.91,1.91,0,0,1-.58,1.4L9.25,21ZM18.45,9,17,7.55Zm-12,3A5.31,5.31,0,0,0,4.9,8.1,5.31,5.31,0,0,0,1,6.5,5.31,5.31,0,0,0,4.9,4.9,5.31,5.31,0,0,0,6.5,1,5.31,5.31,0,0,0,8.1,4.9,5.31,5.31,0,0,0,12,6.5,5.46,5.46,0,0,0,6.5,12Z\"/>\n",
-              "  </svg>\n",
-              "    </button>\n",
-              "    <script>\n",
-              "      (() => {\n",
-              "      const buttonEl =\n",
-              "        document.querySelector('#id_280d0aa3-33ac-4eae-adb0-dbf182b81255 button.colab-df-generate');\n",
-              "      buttonEl.style.display =\n",
-              "        google.colab.kernel.accessAllowed ? 'block' : 'none';\n",
-              "\n",
-              "      buttonEl.onclick = () => {\n",
-              "        google.colab.notebook.generateWithVariable('new_data');\n",
-              "      }\n",
-              "      })();\n",
-              "    </script>\n",
-              "  </div>\n",
-              "\n",
-              "    </div>\n",
-              "  </div>\n"
-            ],
-            "application/vnd.google.colaboratory.intrinsic+json": {
-              "type": "dataframe",
-              "variable_name": "new_data",
-              "summary": "{\n  \"name\": \"new_data\",\n  \"rows\": 1,\n  \"fields\": [\n    {\n      \"column\": \"age\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": null,\n        \"min\": 30,\n        \"max\": 30,\n        \"num_unique_values\": 1,\n        \"samples\": [\n          30\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"bmi\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": null,\n        \"min\": 25.0,\n        \"max\": 25.0,\n        \"num_unique_values\": 1,\n        \"samples\": [\n          25.0\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    },\n    {\n      \"column\": \"smoker\",\n      \"properties\": {\n        \"dtype\": \"number\",\n        \"std\": null,\n        \"min\": 0,\n        \"max\": 0,\n        \"num_unique_values\": 1,\n        \"samples\": [\n          0\n        ],\n        \"semantic_type\": \"\",\n        \"description\": \"\"\n      }\n    }\n  ]\n}"
-            }
-          },
-          "metadata": {}
-        },
-        {
-          "output_type": "stream",
-          "name": "stdout",
-          "text": [
-            "\n",
-            "Predicted insurance charge for the new individual: $6,062.63\n"
-          ]
-        }
-      ]
-    },
-    {
-      "cell_type": "code",
-      "source": [
-        "\n",
-        "import pandas as pd\n",
-        "\n",
-        "sample = pd.DataFrame({\n",
-        "    \"age\": [50],\n",
-        "    \"bmi\": [30.2],\n",
-        "    \"smoker\": [0]\n",
-        "})\n",
-        "\n",
-        "sample_scaled = scaler_rf.transform(sample)\n",
-        "prediction = rf_model.predict(sample_scaled)\n",
-        "\n",
-        "print(\"Prediction successful ✅\")\n",
-        "print(\"Insurance cost:\", prediction[0])\n"
-      ],
-      "metadata": {
-        "colab": {
-          "base_uri": "https://localhost:8080/"
-        },
-        "id": "V88ZuAsX0C-b",
-        "outputId": "1115f850-a040-4574-8dd3-d2f000a4e15e"
-      },
-      "execution_count": 8,
-      "outputs": [
-        {
-          "output_type": "stream",
-          "name": "stdout",
-          "text": [
-            "Prediction successful ✅\n",
-            "Insurance cost: 10809.591303723591\n"
-          ]
-        }
-      ]
-    }
-  ],
-  "metadata": {
-    "colab": {
-      "name": "Welcome to Colab",
-      "provenance": [],
-      "include_colab_link": true
-    },
-    "kernelspec": {
-      "display_name": "Python 3",
-      "name": "python3"
-    }
-  },
-  "nbformat": 4,
-  "nbformat_minor": 0
+
+# Import Libraries
+import numpy as np
+import pandas as pd
+
+# Preprocessing
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+
+# Models
+from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.svm import SVR, SVC
+
+# Evaluation
+from sklearn.metrics import mean_squared_error, r2_score
+
+# Load data
+df = pd.read_csv("insurance.csv")
+print(df.head())
+
+# Encoding categorical variables
+df["sex"] = df["sex"].map({"male": 1, "female": 0})
+df["smoker"] = df["smoker"].map({"yes": 1, "no": 0})
+df["region"] = df["region"].map({
+    "southeast": 0,
+    "southwest": 1,
+    "northeast": 2,
+    "northwest": 3
+})
+
+print(df.head())
+
+# Correlation check
+print(df.corr()["charges"])
+
+# Drop selected columns
+df.drop(columns=["sex", "children", "region"], inplace=True)
+print(df.head())
+
+# Split features and target
+X_train, x_test, y_train, y_test = train_test_split(
+    df.drop("charges", axis=1),
+    df["charges"],
+    test_size=0.2,
+    random_state=42
+)
+
+# Scaling
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+x_test = scaler.transform(x_test)
+
+# Model selection
+models = {
+    "Linear Regression": LinearRegression(),
+    "Decision Tree Regressor": DecisionTreeRegressor(
+        max_depth=5,
+        random_state=42
+    ),
+    "Random Forest Regressor": RandomForestRegressor(
+        n_estimators=100,
+        max_depth=5,
+        random_state=42
+    ),
+    "KNN Regressor": KNeighborsRegressor(),
+    "SVM": SVR(kernel="linear")
 }
+
+results = {}
+
+# Train and evaluate models
+for name, model in models.items():
+    model.fit(X_train, y_train)
+
+    # Test predictions
+    y_pred_test = model.predict(x_test)
+    r2_test = r2_score(y_test, y_pred_test)
+    rmse_test = np.sqrt(mean_squared_error(y_test, y_pred_test))
+
+    # Train predictions
+    y_pred_train = model.predict(X_train)
+    r2_train = r2_score(y_train, y_pred_train)
+    rmse_train = np.sqrt(mean_squared_error(y_train, y_pred_train))
+
+    results[name] = {
+        "R2 Score (Test)": r2_test,
+        "RMSE (Test)": rmse_test,
+        "R2 Score (Train)": r2_train,
+        "RMSE (Train)": rmse_train
+    }
+
+print("Model Evaluation Results:")
+for name, metrics in results.items():
+    print(name)
+    for metric_name, value in metrics.items():
+        print(f"  {metric_name}: {value:.4f}")
