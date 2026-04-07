@@ -1,6 +1,0 @@
-
-- name: Run ML model
-  run: |
-    ls -la
-    python ./MedicalCost_RandomTreeRegressormodel.py
-``
